@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text NameScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,10 +20,17 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+    public class saveData
+    {
+        public int score;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
+        int s = LoadScore();
+        string temp = "Last Score " + s + " : Name : ";
+        NameScoreText.text = temp + GameManager.name;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -72,5 +81,38 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        saveScore();
     }
+
+    int LoadScore() {
+
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            saveData s = JsonUtility.FromJson<saveData>(json);
+            Debug.Log("found data " + s.score);
+            return s.score;
+
+        }
+
+        Debug.Log("didnt found data " + 0);
+
+        return 0;
+
+    }
+
+    void saveScore()
+    {
+        saveData s = new saveData();
+        s.score = m_Points;
+        string json = JsonUtility.ToJson(s);
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+        Debug.Log("saving score "  + m_Points);
+
+    }
+
+
+
+
 }
